@@ -27,8 +27,7 @@ fn verify_pedersen_commitment(
     commitment == expected_commitment
 }
 
-fn main() {
-
+fn msm_maker() -> RistrettoPoint {
     // https://doc.dalek.rs/curve25519_dalek/traits/trait.MultiscalarMul.html
 
     let a = Scalar::from(87329482u64);
@@ -43,7 +42,6 @@ fn main() {
     // A1 = a*P + b*Q + c*R
     let abc = [a,b,c];
     let A1 = RistrettoPoint::multiscalar_mul(&abc, &[P,Q,R]);
-
     // Note: (&abc).into_iter(): Iterator<Item=&Scalar>
 
     // A2 = (-a)*P + (-b)*Q + (-c)*R
@@ -52,16 +50,25 @@ fn main() {
     // Note: minus_abc.into_iter(): Iterator<Item=Scalar>
 
     assert_eq!(A1.compress(), (-A2).compress());
+    A1
+}
+
+fn main() {
+
+    // https://doc.dalek.rs/curve25519_dalek/traits/trait.MultiscalarMul.html
+
+    let msm_result = msm_maker();
+
 
     let seed_value = 2024u64;
     let value = Scalar::from(seed_value);
     let blinding = Scalar::random(&mut OsRng);
 
     // Generate the commitment
-    let commitment = pedersen_commitment(value, blinding, A1);
+    let commitment = pedersen_commitment(value, blinding, msm_result);
     println!("Pedersen Commitment: {:?}", commitment);
 
     // Verify the commitment
-    let is_valid = verify_pedersen_commitment(commitment, value, blinding, A1);
+    let is_valid = verify_pedersen_commitment(commitment, value, blinding, msm_result);
     println!("Is the commitment valid? {}", is_valid);
 }
