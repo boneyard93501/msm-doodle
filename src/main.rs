@@ -54,8 +54,10 @@ fn msm_maker() -> RistrettoPoint {
 }
 
 fn main() {
-
+    // msm:
     // https://doc.dalek.rs/curve25519_dalek/traits/trait.MultiscalarMul.html
+    // pedersen
+    // https://asecuritysite.com/ecc/ecc_blind
 
     let msm_result = msm_maker();
 
